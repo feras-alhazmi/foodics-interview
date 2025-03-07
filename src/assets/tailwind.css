@@ -1,0 +1,21 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+.custom-scrollbar::-webkit-scrollbar {
+    width: 8px;
+    /* scrollbar width */
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background-color: #f1f1f1;
+    /* track color */
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background-color: #cbd5e0;
+    /* “thumb” color (Tailwind gray-300ish) */
+    border-radius: 9999px;
+    /* round corners */
+    border: 2px solid #f1f1f1;
+    /* optional border around thumb */
+  }
