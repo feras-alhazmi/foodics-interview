@@ -6,11 +6,10 @@
             <h2 class="text-xl font-bold border-b p-4 mb-4">Add Branches</h2>
 
             <!-- Loading & Error -->
-            <div v-if="loading" class="text-gray-600">Loading branches...</div>
             <div v-if="getError" class="text-red-500 mb-4">{{ getError.message }}</div>
 
             <!-- ProfessionalSelect to pick branches that do NOT accept reservations -->
-            <div v-if="!loading && hasBranches" class="mb-4 px-6">
+            <div v-if="hasBranches" class="mb-4 px-6">
                 <label class="block text-gray-700 mb-2">Branches</label>
                 <foodics-select v-model="selectedBranches" :options="branchOptions" :multiple="true"
                     labelKey="displayName" valueKey="id" placeholder="Select branches to enable" />

@@ -1,38 +1,32 @@
 <template>
     <div>
         <!-- Header + Add Branches + Disable All Reservations Buttons -->
-        <div class="flex bg-white px-10 py-6 mb-6 items-center justify-between  rounded-lg">
+        <div class="flex bg-white px-10 py-6 mb-6 items-center justify-between rounded-lg">
             <h2 class="text-2xl font-bold">Reservations</h2>
-            <button @click="disableAllReservations" class="bg-purple-800 text-white px-4 py-2 rounded shadow ">
+            <button @click="disableAllReservations" class="bg-purple-800 text-white px-4 py-2 rounded shadow">
                 Disable All Reservations
             </button>
         </div>
 
-
-        <!-- Loading & Error States -->
-        <div v-if="isLoading" class="text-gray-600">Loading branches...</div>
+        <!-- Local Loading & Error States -->
+        <div v-if="isLocalLoading" class="text-gray-600">Loading branches...</div>
         <div v-if="getError" class="text-red-500 mb-4">Error: {{ getError.message }}</div>
-        <div v-else-if="!isLoading && !branches.length" class="text-gray-600">
+        <div v-else-if="!isLocalLoading && !branches.length" class="text-gray-600">
             No branches found.
         </div>
 
         <!-- Branches Table -->
-
-
-
-        <div class="m-12  bg-white rounded-lg  ">
+        <div class="m-12 pb-6 rounded-lg  bg-white ">
             <div class="flex justify-end">
                 <button @click="showAddBranchesPopup = true"
-                    class=" text-gray-600 border border-gray-300 px-4 py-2 rounded-lg shadow m-4">
+                    class="text-gray-600 border border-gray-300 px-4 py-2 rounded-lg shadow m-4">
                     Add Branches
                 </button>
             </div>
-            <table v-if="!isLoading && branches.length" class=" min-w-full bg-white ">
-
-
-                <thead class=" border border-y-1 border-x-0 border-gray-200">
-                    <tr class="bg-white  text-gray-700">
-                        <th class=" p-3 ">Name</th>
+            <table v-if="!isLocalLoading && branches.length" class="min-w-full bg-white">
+                <thead class="border border-y-1 border-x-0 border-gray-200">
+                    <tr class="bg-white text-gray-700">
+                        <th class="p-3">Name</th>
                         <th>Reference</th>
                         <th># Reservation Tables</th>
                         <th>Reservation Duration</th>
@@ -52,9 +46,6 @@
             </table>
         </div>
 
-
-
-
         <!-- Add Branches Popup -->
         <add-branches-popup v-if="showAddBranchesPopup" @close="showAddBranchesPopup = false" />
 
@@ -66,7 +57,7 @@
 <script>
 import { mapGetters, mapActions } from "vuex";
 import AddBranchesPopup from "./AddBranchesPopup.vue";
-import BranchSettingsPopup from "./BranchSettingsPopup.vue";
+import BranchSettingsPopup from "./BranchSettings/BranchSettingsPopup.vue";
 
 export default {
     name: "BranchList",
@@ -78,10 +69,11 @@ export default {
         return {
             showAddBranchesPopup: false,
             selectedBranch: null,
+            isLocalLoading: true,
         };
     },
     computed: {
-        ...mapGetters(["getBranches", "isLoading", "getError"]),
+        ...mapGetters(["getBranches", "getError"]),
         branches() {
             return this.getBranches;
         },
@@ -108,7 +100,13 @@ export default {
         },
     },
     created() {
-        this.fetchBranches();
+        this.fetchBranches()
+            .then(() => {
+                this.isLocalLoading = false;
+            })
+            .catch(() => {
+                this.isLocalLoading = false;
+            });
     },
 };
 </script>
