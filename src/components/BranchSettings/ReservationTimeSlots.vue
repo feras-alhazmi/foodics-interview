@@ -1,11 +1,6 @@
 <template>
     <div class="mb-4">
-        <label class="block text-gray-700 mb-1 font-semibold">
-            Reservation Time Slots
-        </label>
-        <p class="text-sm text-gray-500 mb-2">
-            Up to 3 time slots per day. Example: 11:00 - 17:00 &amp; 18:00 - 23:00.
-        </p>
+
         <div v-for="day in daysOfWeek" :key="day" class="mb-4">
             <div class="flex justify-between items-center mb-2">
                 <h4 class="font-medium capitalize">{{ day }}</h4>

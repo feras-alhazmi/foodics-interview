@@ -9,27 +9,25 @@
 
                 <div class="mb-4 text-blue-500 border-y border-blue-400 bg-blue-100 p-3">
 
-                    Branch working hours are 00:00 - 00:00
+                    Branch working hours are {{ branch.opening_from }} to {{ branch.opening_to }}
 
 
                 </div>
                 <!-- Reservation Duration -->
 
                 <div class="mb-4">
-                    <label class="block text-gray-700 mb-1">
+                    <label class="block text-gray-700 mb-2">
                         Reservation Duration (minutes)
                     </label>
-                    <input type="number" v-model="localDuration" min="1" class="border rounded w-full p-2" required />
+                    <input type="number" v-model="localDuration" min="30" class="border rounded w-full p-2" required />
                 </div>
 
                 <!-- Select for Tables -->
-                <div class="mb-4">
-                    <label class="block text-gray-700 mb-1 font-semibold">
+                <div v-if="tableOptions.length > 0" class="mb-4">
+                    <label class="block text-gray-700 mb-2 font-semibold">
                         Tables
                     </label>
-                    <p class="text-sm text-gray-500 mb-2">
-                        Select which tables can be reserved in this branch.
-                    </p>
+
                     <foodics-select v-model="selectedTables" :options="tableOptions" :multiple="true"
                         labelKey="displayName" valueKey="id" placeholder="Select tables" />
                 </div>
@@ -52,6 +50,7 @@ import BranchSettingsHeader from "./BranchSettingsHeader.vue";
 import ReservationTimeSlots from "./ReservationTimeSlots.vue";
 import BranchSettingsFooter from "./BranchSettingsFooter.vue";
 import FoodicsSelect from "@/components/FoodicsSelect.vue";
+import { applySlotTextUtil } from "@/utils/timeSlotUtils";
 
 export default {
     name: "BranchSettingsPopup",
@@ -90,13 +89,11 @@ export default {
             this.branch.sections.forEach((sec) => {
                 if (sec.tables) {
                     sec.tables.forEach((tbl) => {
-                        if (tbl.accepts_reservations === false) {
-                            result.push({
-                                id: tbl.id,
-                                displayName: `${sec.name} - ${tbl.name}`,
-                                accepts_reservations: tbl.accepts_reservations,
-                            });
-                        }
+                        result.push({
+                            id: tbl.id,
+                            displayName: `${sec.name} - ${tbl.name}`,
+                            accepts_reservations: tbl.accepts_reservations,
+                        });
                     });
                 }
             });
@@ -106,7 +103,8 @@ export default {
     methods: {
         ...mapActions([
             "updateBranchSettings",
-            "updateBranchReservationStatus"
+            "updateBranchReservationStatus",
+            "updateTableReservationStatus"
         ]),
         cloneTimes(times) {
             const days = [
@@ -162,53 +160,19 @@ export default {
             this.reservationTimes[day].splice(index, 1);
         },
         applySlotText({ slot, day, index }) {
-            // Trim input and match "HH:MM - HH:MM"
-            const text = slot.text.trim();
-            const match = text.match(/^(\d{2}):(\d{2})\s*-\s*(\d{2}):(\d{2})$/);
-            if (!match) {
-                alert("Please use 'HH:MM - HH:MM' format (e.g. 00:00 - 23:59).");
-                return;
-            }
-            let [, sH, sM, eH, eM] = match;
-            [sH, sM, eH, eM] = [sH, sM, eH, eM].map(Number);
-            const pad = (num) => String(num).padStart(2, "0");
-            const toMinutes = (hours, mins) => hours * 60 + mins;
-            if (sH < 0 || sH > 23 || sM < 0 || sM > 59) {
-                alert("Start time must be between 00:00 and 23:59.");
-                return;
-            }
-            if (eH < 0 || eH > 24 || eM < 0 || eM > 59) {
-                alert("End time must be between 00:00 and 24:00 (minutes up to 59 only if < 24h).");
-                return;
-            }
-            if (eH === 24 && eM !== 0) {
-                alert("24:00 is only valid if minutes are '00'.");
-                return;
-            }
-            const startTotal = toMinutes(sH, sM);
-            const endTotal = toMinutes(eH, eM);
-            if (startTotal >= endTotal) {
-                alert("Start time must be strictly earlier than end time.");
-                return;
-            }
-            // Check for overlaps in the day's slots
+
+            // Pass necessary parameters from the component state.
             const slots = this.reservationTimes[day];
-            for (let i = 0; i < slots.length; i++) {
-                if (i === index) continue;
-                const existingSlot = slots[i];
-                if (
-                    (existingSlot.start <= `${pad(sH)}:${pad(sM)}` &&
-                        existingSlot.end >= `${pad(sH)}:${pad(sM)}`) ||
-                    (existingSlot.start <= `${pad(eH)}:${pad(eM)}` &&
-                        existingSlot.end >= `${pad(eH)}:${pad(eM)}`)
-                ) {
-                    alert("Time slot overlaps with another existing slot. Please try again.");
-                    return;
-                }
-            }
-            slot.start = `${pad(sH)}:${pad(sM)}`;
-            slot.end = `${pad(eH)}:${pad(eM)}`;
-            slot.isEditing = false;
+            const success = applySlotTextUtil({
+                slot,
+                day,
+                index,
+                branch: this.branch,
+                slots,
+            });
+
+            return success;
+
         },
         applySaturdayToAll() {
             const saturdaySlots = this.reservationTimes.saturday.map((slot) => ({
@@ -242,6 +206,18 @@ export default {
                     reservation_duration: parseInt(this.localDuration, 10),
                     reservation_times: finalTimes,
                 };
+                this.selectedTables.forEach(async (tbl) => {
+                    if (tbl.accepts_reservations === false) {
+
+                        await this.updateTableReservationStatus({ tableId: tbl.id, status: true });
+                    }
+                })
+                for (const tbl of this.tableOptions) {
+                    if (tbl.accepts_reservations === true && !this.selectedTables.some(item => item.id === tbl.id)) {
+                        await this.updateTableReservationStatus({ tableId: tbl.id, status: false });
+                    }
+                }
+
                 await this.updateBranchSettings({
                     branchId: this.branch.id,
                     settings: payload,

@@ -12,8 +12,7 @@
         <span v-for="(item, idx) in selectedItems" :key="item[valueKey] || idx"
           class="flex items-center border border-blue-300 px-2 py-1 rounded-lg">
           {{ item[labelKey] }}
-          <!-- Remove button for each pill -->
-
+          <!-- (Optional: you can add a remove button here if desired) -->
         </span>
       </template>
 
@@ -36,13 +35,18 @@
 
     <!-- Dropdown Options -->
     <transition name="fade">
-      <ul v-if="isOpen" class="absolute z-50 mt-1 w-full bg-white border border-gray-200 rounded-md shadow-md 
-         max-h-60 overflow-y-auto
-custom-scrollbar
-         ">
-        <li v-for="(option, index) in options" :key="option[valueKey] || index"
-          class="px-3 py-2 hover:bg-blue-50 cursor-pointer" @click.stop="selectOption(option)">
-          {{ option[labelKey] }}
+      <ul v-if="isOpen"
+        class="absolute z-50 mt-1 w-full bg-white border border-gray-200 rounded-md shadow-md max-h-60 overflow-y-auto custom-scrollbar">
+        <li v-for="(option, index) in options" :key="option[valueKey] || index" :class="[
+          'm-1 px-2 py-1 flex  items-center rounded-lg justify-between hover:bg-blue-300  hover:text-white cursor-pointer'
+
+        ]" @click.stop="toggleOption(option)">
+          <span>{{ option[labelKey] }}</span>
+          <!-- Show a checkmark icon if the option is selected -->
+          <svg v-if="isSelected(option)" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2"
+            viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path>
+          </svg>
         </li>
       </ul>
     </transition>
@@ -52,35 +56,34 @@ custom-scrollbar
 <script>
 export default {
   name: "FoodicsSelect",
-
   props: {
     // The array of objects to display
     options: {
       type: Array,
       default: () => [],
     },
-    // For a single item, we can pass an object or null
-    // For multiple items, we can pass an array
+    // For a single item, we can pass an object or null.
+    // For multiple items, we can pass an array.
     value: {
       type: [Object, Array, null],
       default: null,
     },
-    // Whether multiple selection is allowed
+    // Whether multiple selection is allowed.
     multiple: {
       type: Boolean,
       default: false,
     },
-    // The key used for displaying the label
+    // The key used for displaying the label.
     labelKey: {
       type: String,
       default: "label",
     },
-    // The key used for the underlying value
+    // The key used for the underlying value.
     valueKey: {
       type: String,
       default: "value",
     },
-    // Placeholder text when nothing is selected
+    // Placeholder text when nothing is selected.
     placeholder: {
       type: String,
       default: "Select an option",
@@ -92,13 +95,11 @@ export default {
     };
   },
   computed: {
-    // Turn 'value' prop into an array for multiple selection
+    // Convert the 'value' prop into an array for multiple selection.
     selectedItems() {
       if (this.multiple) {
-        // If it's an array, return it directly; else empty array
         return Array.isArray(this.value) ? this.value : [];
       } else {
-        // Single item => wrap in array if present
         return this.value ? [this.value] : [];
       }
     },
@@ -110,41 +111,40 @@ export default {
     closeDropdown() {
       this.isOpen = false;
     },
-    selectOption(option) {
+    isSelected(option) {
+      return this.selectedItems.some(
+        (item) => item[this.valueKey] === option[this.valueKey]
+      );
+    },
+    toggleOption(option) {
       if (this.multiple) {
-        // If already selected, do nothing
         const alreadySelected = this.selectedItems.find(
           (item) => item[this.valueKey] === option[this.valueKey]
         );
-        if (!alreadySelected) {
-          // Emit new array with the selected item appended
+        if (alreadySelected) {
+          // Unselect option.
+          const newValue = this.selectedItems.filter(
+            (item) => item[this.valueKey] !== option[this.valueKey]
+          );
+          this.$emit("input", newValue);
+        } else {
+          // Select option.
           const newValue = [...this.selectedItems, option];
           this.$emit("input", newValue);
         }
       } else {
-        // Single selection => just emit the new object
+        // Single selection: select the option and close the dropdown.
         this.$emit("input", option);
         this.closeDropdown();
       }
     },
-    removeOption(option) {
-      // For multiple selection only
-      if (this.multiple) {
-        const newValue = this.selectedItems.filter(
-          (item) => item[this.valueKey] !== option[this.valueKey]
-        );
-        this.$emit("input", newValue);
-      }
-    },
     onClickOutside(e) {
-      // If click is outside the root element
       if (!this.$refs.selectRoot.contains(e.target)) {
         this.closeDropdown();
       }
     },
   },
   mounted() {
-    // Handle clicks outside the dropdown
     document.addEventListener("mousedown", this.onClickOutside);
   },
   beforeDestroy() {
