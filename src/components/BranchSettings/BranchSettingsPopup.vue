@@ -39,7 +39,8 @@
             </div>
 
             <!-- Fixed Footer -->
-            <BranchSettingsFooter @close="closePopup" @save="saveSettings" @disable="disableReservations" />
+            <BranchSettingsFooter :isSubmitting="isSaving" @close="closePopup" @save="saveSettings"
+                @disable="disableReservations" />
         </div>
     </div>
 </template>
@@ -80,6 +81,7 @@ export default {
             ],
             reservationTimes: this.cloneTimes(this.branch.reservation_times || {}),
             selectedTables: this.getSelectedTables(),
+            isSaving: false
         };
     },
     computed: {
@@ -198,6 +200,17 @@ export default {
         },
         async saveSettings() {
             try {
+
+                // Check if any slots are still in edit mode
+                const hasEditingSlots = this.daysOfWeek.some((day) =>
+                    this.reservationTimes[day].some((slot) => slot.isEditing)
+                );
+
+                if (hasEditingSlots) {
+                    alert("Please complete or remove all time slots before saving.");
+                    return;
+                }
+                this.isSaving = true;
                 const finalTimes = {};
                 this.daysOfWeek.forEach((day) => {
                     finalTimes[day] = this.reservationTimes[day].map((slot) => [slot.start, slot.end]);
@@ -222,6 +235,7 @@ export default {
                     branchId: this.branch.id,
                     settings: payload,
                 });
+                this.isSaving = false;
                 this.closePopup();
             } catch (error) {
                 console.error("Error saving branch settings:", error);

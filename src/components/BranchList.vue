@@ -9,41 +9,46 @@
         </div>
 
         <!-- Local Loading & Error States -->
-        <div v-if="isLocalLoading" class="text-gray-600">Loading branches...</div>
+
+
         <div v-if="getError" class="text-red-500 mb-4">Error: {{ getError.message }}</div>
         <div v-else-if="!isLocalLoading && !branches.length" class="text-gray-600">
             No branches found.
         </div>
 
         <!-- Branches Table -->
-        <div class="m-12 pb-6 rounded-lg  bg-white ">
+        <div class="m-12 pb-6 rounded-lg  bg-white min-h-[70vh] ">
             <div class="flex justify-end">
                 <button @click="showAddBranchesPopup = true"
                     class="text-gray-600 border border-gray-300 px-4 py-2 rounded-lg shadow m-4">
                     Add Branches
                 </button>
             </div>
-            <table v-if="!isLocalLoading && branches.length" class="min-w-full bg-white">
-                <thead class="border border-y-1 border-x-0 border-gray-200">
-                    <tr class="bg-white text-gray-700">
-                        <th class="p-3">Name</th>
-                        <th>Reference</th>
-                        <th># Reservation Tables</th>
-                        <th>Reservation Duration</th>
+            <div v-if="isLocalLoading" class="m-28">
+                <LoadingSpinner :size="60" />
+            </div>
+            <table v-if="!isLocalLoading && branches.length" class="min-w-full bg-white border-collapse">
+                <thead class="border-y">
+                    <tr class="text-left text-gray-700">
+                        <th class="p-3 font-semibold">Branch</th>
+                        <th class="p-3 font-semibold">Reference</th>
+                        <th class="p-3 font-semibold">Number of Tables</th>
+                        <th class="p-3 font-semibold">Reservation Duration</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr v-for="branch in branches" :key="branch.id" class="hover:bg-gray-50 cursor-pointer"
                         @click="openBranchSettings(branch)">
-                        <td class="py-2 px-4 border">{{ branch.name }}</td>
-                        <td class="py-2 px-4 border">{{ branch.reference }}</td>
-                        <td class="py-2 px-4 border">{{ countReservationTables(branch) }}</td>
-                        <td class="py-2 px-4 border">
+                        <td class="py-3 px-4 border-t">{{ branch.name }}</td>
+                        <td class="py-3 px-4 border-t">{{ branch.reference }}</td>
+                        <td class="py-3 px-4 border-t">{{ countReservationTables(branch) }}</td>
+                        <td class="py-3 px-4 border-t">
                             {{ branch.reservation_duration || 'Not Set' }} min
                         </td>
                     </tr>
                 </tbody>
             </table>
+
         </div>
 
         <!-- Add Branches Popup -->
@@ -58,12 +63,14 @@
 import { mapGetters, mapActions } from "vuex";
 import AddBranchesPopup from "./AddBranchesPopup.vue";
 import BranchSettingsPopup from "./BranchSettings/BranchSettingsPopup.vue";
+import LoadingSpinner from "./LoadingSpinner.vue";
 
 export default {
     name: "BranchList",
     components: {
         AddBranchesPopup,
         BranchSettingsPopup,
+        LoadingSpinner
     },
     data() {
         return {

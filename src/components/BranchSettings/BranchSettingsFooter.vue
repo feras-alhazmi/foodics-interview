@@ -7,16 +7,31 @@
             <button class="border border-gray-300 px-4 py-2 rounded-lg" @click="$emit('close')">
                 Close
             </button>
-            <button class="bg-purple-800 text-white px-4 py-2 rounded-lg" @click="$emit('save')">
-                Save
+
+
+            <button class="bg-purple-800 text-white px-4 py-2 rounded-lg flex items-center space-x-2"
+                @click="$emit('save')" :disabled="isSubmitting">
+                <span>Save</span>
+                <LoadingSpinner v-if="isSubmitting" :size="20" :color="'white'" />
             </button>
         </div>
     </div>
 </template>
 
 <script>
+import LoadingSpinner from "@/components/LoadingSpinner.vue";
 export default {
     name: "BranchSettingsFooter",
+    components: {
+        LoadingSpinner,
+    },
+    props: {
+        isSubmitting: {
+            type: Boolean,
+            default: false,
+
+        },
+    },
 };
 </script>
 

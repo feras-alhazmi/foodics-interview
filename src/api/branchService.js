@@ -4,8 +4,6 @@ import axios from "axios";
 const API_BASE_URL = process.env.VUE_APP_API_BASE_URL;
 const BEARER_TOKEN = process.env.VUE_APP_API_TOKEN;
 
-
-
 const api = axios.create({
   baseURL: API_BASE_URL,
   headers: {
@@ -15,7 +13,6 @@ const api = axios.create({
 });
 
 export const fetchBranches = async () => {
-    console.log(BEARER_TOKEN)
   const response = await api.get("/branches?include[]=sections&include[]=sections.tables");
   return response.data.data;
 };

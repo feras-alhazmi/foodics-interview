@@ -24,8 +24,10 @@
                 <button class="border border-gray-300 px-4 py-2 rounded-lg " @click="$emit('close')">
                     Close
                 </button>
-                <button class="bg-purple-800 text-white px-4 py-2 rounded-lg " @click="enableSelectedBranches">
-                    Save
+                <button class="bg-purple-800 text-white px-4 py-2 rounded-lg flex items-center space-x-2"
+                    @click="enableSelectedBranches" :disabled="isSubmitting">
+                    <span>Save</span>
+                    <LoadingSpinner v-if="isSubmitting" :size="20" :color="'white'" />
                 </button>
 
             </div>
@@ -36,15 +38,18 @@
 <script>
 import { mapGetters, mapActions } from "vuex";
 import FoodicsSelect from "@/components/FoodicsSelect.vue";
+import LoadingSpinner from "./LoadingSpinner.vue";
 
 export default {
     name: "AddBranchesPopup",
     components: {
         FoodicsSelect,
+        LoadingSpinner
     },
     data() {
         return {
-            selectedBranches: [], // holds the user’s selection
+            selectedBranches: [],
+            isSubmitting: false // holds the user’s selection
         };
     },
     computed: {
@@ -71,6 +76,7 @@ export default {
     methods: {
         ...mapActions(["fetchBranches", "updateBranchReservationStatus"]),
         async enableSelectedBranches() {
+            this.isSubmitting = true;
             if (!this.selectedBranches.length) {
                 this.$emit("close");
                 return;
@@ -83,6 +89,7 @@ export default {
                         status: true,
                     });
                 }
+                this.isSubmitting = false;
                 this.$emit("close");
             } catch (error) {
                 console.error("Error enabling reservations:", error);
