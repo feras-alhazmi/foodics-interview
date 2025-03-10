@@ -35,6 +35,4 @@ export default {
 };
 </script>
 
-<style scoped>
-/* Footer-specific styles */
-</style>
+<style scoped></style>

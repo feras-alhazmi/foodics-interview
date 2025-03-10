@@ -65,6 +65,4 @@ export default {
 };
 </script>
 
-<style scoped>
-/* Styles for the reservation time slots section */
-</style>
+<style scoped></style>

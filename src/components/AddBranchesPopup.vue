@@ -5,10 +5,10 @@
 
             <h2 class="text-xl font-bold border-b p-4 mb-4">Add Branches</h2>
 
-            <!-- Loading & Error -->
+            <!-- If there is an Error -->
             <div v-if="getError" class="text-red-500 mb-4">{{ getError.message }}</div>
 
-            <!-- ProfessionalSelect to pick branches that do NOT accept reservations -->
+            <!-- Select component to pick branches that do NOT accept reservations -->
             <div v-if="hasBranches" class="mb-4 px-6">
                 <label class="block text-gray-700 mb-2">Branches</label>
                 <foodics-select v-model="selectedBranches" :options="branchOptions" :multiple="true"

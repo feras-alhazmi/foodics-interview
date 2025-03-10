@@ -1,4 +1,3 @@
-// src/utils/timeSlotUtils.js
 
 export function applySlotTextUtil({ slot, index, branch, slots }) {
     // Trim input and match "HH:MM - HH:MM"

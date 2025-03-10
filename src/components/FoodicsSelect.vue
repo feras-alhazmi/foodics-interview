@@ -12,7 +12,7 @@
         <span v-for="(item, idx) in selectedItems" :key="item[valueKey] || idx"
           class="flex items-center border border-blue-300 px-2 py-1 rounded-lg">
           {{ item[labelKey] }}
-          <!-- (Optional: you can add a remove button here if desired) -->
+
         </span>
       </template>
 
@@ -26,7 +26,7 @@
         </span>
       </template>
 
-      <!-- Chevron Icon (optional) -->
+      <!-- Chevron Icon -->
       <svg :class="['ml-auto h-4 w-4 transition-transform', { 'rotate-180': isOpen }]" fill="none" stroke="currentColor"
         stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
         <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"></path>
@@ -57,7 +57,6 @@
 export default {
   name: "FoodicsSelect",
   props: {
-    // The array of objects to display
     options: {
       type: Array,
       default: () => [],
